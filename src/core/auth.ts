@@ -45,16 +45,18 @@ export const requireAuth = createMiddleware<Env>(async (c, next) => {
     throw new HTTPException(401, { message: 'Sesi berakhir, silakan login kembali' })
   }
   // Role, site and active status are read fresh, so a demoted or deactivated user loses access immediately.
-  const user = await db
-    .selectFrom('users')
-    .select(['id', 'employee_code', 'name', 'role', 'site', 'department_id'])
-    .where('id', '=', id)
-    .where('is_active', '=', true)
-    .where('deleted_at', 'is', null)
-    .executeTakeFirst()
+  const [user] = await Promise.all([
+    db
+      .selectFrom('users')
+      .select(['id', 'employee_code', 'name', 'role', 'site', 'department_id'])
+      .where('id', '=', id)
+      .where('is_active', '=', true)
+      .where('deleted_at', 'is', null)
+      .executeTakeFirst(),
+    masters.load(), // DTO validation and permission checks read the master snapshot
+  ])
   if (!user) throw new HTTPException(401, { message: 'Sesi berakhir, silakan login kembali' })
   c.set('user', user as User)
-  await masters.load() // DTO validation and permission checks read the master snapshot
   await next()
 })
 

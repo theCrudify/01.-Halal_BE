@@ -5,5 +5,10 @@
   // nodejs_compat: pg, node:crypto (scrypt), AsyncLocalStorage; process.env is filled from vars/secrets.
   "compatibility_flags": ["nodejs_compat"],
   "vars": { "NODE_ENV": "production" },
+  // Run the worker next to the database instead of next to the caller: every query is a round trip to Postgres.
+  "placement": { "mode": "smart" },
+  // Pooled connections (no TCP + TLS + auth handshake per request). Create once, then uncomment with the returned id:
+  //   npx wrangler hyperdrive create halal-db --connection-string="<DATABASE_URL>" --caching-disabled
+  // "hyperdrive": [{ "binding": "HYPERDRIVE", "id": "<id>" }],
   "observability": { "enabled": true }
 }

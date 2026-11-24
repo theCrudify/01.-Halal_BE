@@ -25,9 +25,9 @@ export const db: Kysely<any> = new Proxy(rootDb, {
   },
 })
 
-export async function withRequestDb<T>(fn: () => Promise<T>, waitUntil: (p: Promise<unknown>) => void): Promise<T> {
+export async function withRequestDb<T>(fn: () => Promise<T>, waitUntil: (p: Promise<unknown>) => void, connectionString = process.env.DATABASE_URL): Promise<T> {
   const scoped = new Kysely<any>({
-    dialect: new PostgresDialect({ pool: new pg.Pool({ connectionString: process.env.DATABASE_URL, max: 3 }) }),
+    dialect: new PostgresDialect({ pool: new pg.Pool({ connectionString, max: 3 }) }),
   })
   try {
     return await requestDb.run(scoped, fn)
